@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1>Reminders Dashboard</h1>
+<table>
+    <tr>
+        <th>Volunteer</th>
+        <th>Shots & Next Due</th>
+        <th>Actions</th>
+    </tr>
+    {% for v in volunteers %}
+    <tr>
+        <td>{{ v.name }}</td>
+        <td>
+            <ul>
+                {% for shot in shots %}
+                    <li>
+                        <strong>{{ shot.name }}:</strong>
+                        {% if shot.id in v.shots %}
+                            Last Given: {{ v.shots[shot.id] }},
+                            Next Due: {{ v.next_due[shot.id] }}
+                        {% else %}
+                            No record
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        </td>
+        <td>
+            <a href="{{ url_for('edit_volunteer', volunteer_name=v.name) }}">Edit</a> |
+            <a href="{{ url_for('remove_volunteer', volunteer_name=v.name) }}" onclick="return confirm('Are you sure?');">Remove</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% if volunteers|length == 0 %}
+    <p>No volunteers yet! <a href="{{ url_for('add_reminder') }}">Add one?</a></p>
+{% endif %}
+{% endblock %}

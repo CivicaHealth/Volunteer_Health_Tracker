@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Manage Shot Types{% endblock %}
+{% block content %}
+<h1>Manage Shot Types</h1>
+<form method="POST" style="background: #fff; padding: 2em; border-radius: 6px; box-shadow: 0 1px 5px #bbb;">
+    <label for="admin_email" style="font-weight:bold;">Admin Notification Email:</label>
+    <input type="email" id="admin_email" name="admin_email" value="{{ settings.admin_email or '' }}" style="width:250px; margin-bottom: 1em;">
+    <table style="width:100%; margin-bottom:1em;">
+        <tr>
+            <th>Name</th>
+            <th>Frequency (days)</th>
+            <th>Action</th>
+        </tr>
+        {% for shot in shots %}
+        <tr>
+            <td>
+                <input type="text" name="shot_name_{{ shot.id }}" value="{{ shot.name }}" style="width:95%;">
+            </td>
+            <td>
+                <input type="number" name="shot_frequency_{{ shot.id }}" value="{{ shot.frequency }}" style="width:80px;">
+            </td>
+            <td>
+                <button name="remove_shot" value="{{ shot.id }}" style="background: #e53e3e; color:#fff; border-radius: 4px;">Remove</button>
+            </td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <td>
+                <input type="text" name="new_shot_name" placeholder="New shot name" style="width:95%;">
+            </td>
+            <td>
+                <input type="number" name="new_shot_frequency" placeholder="Days" style="width:80px;">
+            </td>
+            <td>
+                <button type="submit" name="add_shot" style="background: #315fb2; color: #fff; border-radius: 4px;">Add Shot</button>
+            </td>
+        </tr>
+    </table>
+    <button type="submit" name="save_all" style="background: #315fb2; color: #fff; border-radius: 4px; float:right;">Save All</button>
+</form>
+{% endblock %}
