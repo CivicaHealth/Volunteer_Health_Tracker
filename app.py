@@ -1,23 +1,43 @@
 from flask import Flask, render_template, request, redirect, url_for
+import threading
+import time
 import datetime
 
 app = Flask(__name__)
 
-# --- DATA STORAGE: In-memory for demo, replace with database for production ---
 shots = [
-    {"id": 1, "name": "Flu shot", "frequency": 365},  # frequency in days
+    {"id": 1, "name": "Flu shot", "frequency": 365},
     {"id": 2, "name": "Tetanus", "frequency": 3650}
 ]
 volunteers = [
-    # Example:
-    # {"name": "Volunteer 1", "shots": { 1: "2023-10-15", 2: "2022-08-01" } }
+    # {"name": "Test Volunteer", "email": "voltest@email.com", "shots": {1: "2022-06-01", 2: "2022-01-01"}}
 ]
+settings = {
+    "admin_email": "admin@email.com"
+}
 
-# --- ROUTES ---
+def automatic_scheduler():
+    while True:
+        today = datetime.date.today()
+        for v in volunteers:
+            for shot in shots:
+                last_date_str = v["shots"].get(shot["id"])
+                if last_date_str:
+                    last_date = datetime.datetime.strptime(last_date_str, "%Y-%m-%d").date()
+                    next_due = last_date + datetime.timedelta(days=shot["frequency"])
+                    if next_due <= today:
+                        print(f"Would send email to {v['email']} and {settings['admin_email']} for {shot['name']} overdue on {next_due}")
+                        print(f"""
+Subject: Reminder: {shot['name']} due for {v['name']}
+To: {v['email']} and {settings['admin_email']}
+
+Dear {v['name']},
+You are due for your {shot['name']} since {next_due}. Please take this shot as soon as possible.
+                        """)
+        time.sleep(10)  # Check every 10 seconds for demo
 
 @app.route('/')
 def dashboard():
-    # Precompute next due dates for all shots for each volunteer
     today = datetime.date.today()
     for v in volunteers:
         v['next_due'] = {}
@@ -32,9 +52,12 @@ def dashboard():
     return render_template('dashboard.html', volunteers=volunteers, shots=shots)
 
 @app.route('/settings', methods=["GET", "POST"])
-def settings():
-    global shots
+def settings_page():
+    global shots, settings
     if request.method == "POST":
+        email = request.form.get("admin_email")
+        if email:
+            settings["admin_email"] = email
         if "add_shot" in request.form:
             name = request.form.get("new_shot_name")
             freq = request.form.get("new_shot_frequency")
@@ -50,8 +73,8 @@ def settings():
                 if new_name is not None and new_freq is not None:
                     shot["name"] = new_name
                     shot["frequency"] = int(new_freq)
-        return redirect(url_for('settings'))
-    return render_template('settings.html', shots=shots, settings={})
+        return redirect(url_for('settings_page'))
+    return render_template('settings.html', shots=shots, settings=settings)
 
 @app.route('/add_volunteer', methods=["GET", "POST"])
 def add_reminder():
@@ -74,6 +97,7 @@ def edit_volunteer(volunteer_name):
     if not v:
         return "Volunteer not found", 404
     if request.method == "POST":
+        v["email"] = request.form.get("email")
         for shot in shots:
             last_date = request.form.get(f"last_date_{shot['id']}")
             if last_date:
@@ -81,18 +105,16 @@ def edit_volunteer(volunteer_name):
             elif shot["id"] in v["shots"]:
                 del v["shots"][shot["id"]]
         return redirect(url_for("dashboard"))
-    return render_template(
-        "reminder_form.html",
-        volunteer=v,
-        shots=shots,
-        edit_mode=True
-    )
+    return render_template("reminder_form.html", volunteer=v, shots=shots, edit_mode=True)
 
 @app.route('/remove_volunteer/<volunteer_name>', methods=["GET", "POST"])
 def remove_volunteer(volunteer_name):
     global volunteers
     volunteers = [vol for vol in volunteers if vol["name"] != volunteer_name]
     return redirect(url_for("dashboard"))
+
+# --- START AUTOMATIC SCHEDULER THREAD ---
+threading.Thread(target=automatic_scheduler, daemon=True).start()
 
 if __name__ == "__main__":
     app.run(debug=True)

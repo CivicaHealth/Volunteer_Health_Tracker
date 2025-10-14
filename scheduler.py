@@ -27,8 +27,8 @@ def check_due_reminders():
                         f"Last given: {last_date_str}\n"
                     )
                     # Uncomment these when you're ready to send real emails:
-                    # send_reminder_email(v["email"], subject, volunteer_body)
-                    # send_reminder_email(config.DEFAULT_NOTIFICATION_EMAIL, subject, admin_body)
+                    send_reminder_email(v["email"], subject, volunteer_body)
+                    send_reminder_email(config.DEFAULT_NOTIFICATION_EMAIL, subject, admin_body)
                     print(f"Sent reminders (Admin & Volunteer) for {v['name']}: {shot['name']} due {next_due}")
 
 
