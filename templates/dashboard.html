@@ -6,6 +6,7 @@
     <tr>
         <th>Volunteer</th>
         <th>Shots & Next Due</th>
+        <th>Medical History</th>
         <th>Actions</th>
     </tr>
     {% for v in volunteers %}
@@ -19,6 +20,20 @@
                         {% if shot.id in v.shots %}
                             Last Given: {{ v.shots[shot.id] }},
                             Next Due: {{ v.next_due[shot.id] }}
+                        {% else %}
+                            No record
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        </td>
+        <td>
+            <ul>
+                {% for med in medical_history %}
+                    <li>
+                        <strong>{{ med.name }}:</strong>
+                        {% if med.id in v.medical_history %}
+                            {{ v.medical_history[med.id] }}
                         {% else %}
                             No record
                         {% endif %}
