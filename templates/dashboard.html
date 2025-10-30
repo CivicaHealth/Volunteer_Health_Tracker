@@ -14,17 +14,19 @@
         <td>{{ v.name }}</td>
         <td>
             <ul>
-                {% for shot in shots %}
-                    <li>
-                        <strong>{{ shot.name }}:</strong>
-                        {% if shot.id in v.shots %}
-                            Last Given: {{ v.shots[shot.id] }},
-                            Next Due: {{ v.next_due[shot.id] }}
-                        {% else %}
-                            No record
-                        {% endif %}
-                    </li>
-                {% endfor %}
+            {% for shot in shots %}
+                <li>
+                    <strong>{{ shot.name }}:</strong>
+
+                    {% set key = shot.id|string %}
+                    {% if key in v.shots %}
+                        Last Given: {{ v.shots[key] }},
+                        Next Due: {{ v.next_due[key] }}
+                    {% else %}
+                        No record
+                    {% endif %}
+                </li>
+            {% endfor %}
             </ul>
         </td>
         <td>
@@ -32,8 +34,9 @@
                 {% for med in medical_history %}
                     <li>
                         <strong>{{ med.name }}:</strong>
-                        {% if med.id in v.medical_history %}
-                            {{ v.medical_history[med.id] }}
+                        {% set key = med.id|string %}
+                        {% if key in v.medical_history %}
+                            {{ v.medical_history[key] }}
                         {% else %}
                             No record
                         {% endif %}
