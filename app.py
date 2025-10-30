@@ -49,7 +49,7 @@ def automatic_scheduler():
         today = datetime.date.today()
         for v in volunteers:
             for shot in shots:
-                last_date_str = v["shots"].get(shot["id"])
+                last_date_str = v["shots"].get(str(shot["id"]))
                 if last_date_str:
                     last_date = datetime.datetime.strptime(last_date_str, "%Y-%m-%d").date()
                     next_due = last_date + datetime.timedelta(days=shot["frequency"])
@@ -73,13 +73,14 @@ def dashboard():
     for v in volunteers:
         v['next_due'] = {}
         for shot in shots:
-            last_date_str = v["shots"].get(shot["id"])
+            # Use string keys to match JSON keys
+            last_date_str = v["shots"].get(str(shot["id"]))
             if last_date_str:
                 last_date = datetime.datetime.strptime(last_date_str, "%Y-%m-%d").date()
                 next_due = last_date + datetime.timedelta(days=shot["frequency"])
-                v['next_due'][shot["id"]] = next_due.strftime("%Y-%m-%d")
+                v['next_due'][str(shot["id"])] = next_due.strftime("%Y-%m-%d")
             else:
-                v['next_due'][shot["id"]] = "No record"
+                v['next_due'][str(shot["id"])] = "No record"
     return render_template('dashboard.html', volunteers=volunteers, shots=shots, medical_history=medical_history)
 
 # -----------------------------
@@ -147,20 +148,20 @@ def add_reminder():
         for shot in shots:
             last_date = request.form.get(f"last_date_{shot['id']}")
             if last_date:
-                shot_records[shot["id"]] = last_date
+                shot_records[str(shot["id"])] = last_date  # string keys
 
         # Medical History Notes
         medical_records = {}
         for med in medical_history:
             note = request.form.get(f"medical_note_{med['id']}")
             if note:
-                medical_records[med["id"]] = note
+                medical_records[str(med["id"])] = note  # string keys
 
         volunteers.append({
             "name": name,
             "email": email,
-            "shots": shot_records,
-            "medical_history": medical_records
+            "shots": shot_records if shot_records else {},
+            "medical_history": medical_records if medical_records else {}
         })
 
         save_data_encrypted(shots, medical_history, volunteers, settings)
@@ -179,29 +180,35 @@ def edit_volunteer(volunteer_name):
         return "Volunteer not found", 404
 
     if request.method == "POST":
+        # Update the volunteer's email
         v["email"] = request.form.get("email")
-
+        
         # Update shots
         for shot in shots:
             last_date = request.form.get(f"last_date_{shot['id']}")
             if last_date:
-                v["shots"][shot["id"]] = last_date
-            elif shot["id"] in v["shots"]:
-                del v["shots"][shot["id"]]
+                v["shots"][str(shot["id"])] = last_date
+            elif str(shot["id"]) in v["shots"]:
+                del v["shots"][str(shot["id"])]
 
         # Update medical history notes
         for med in medical_history:
             note = request.form.get(f"medical_note_{med['id']}")
             if note:
-                v["medical_history"][med["id"]] = note
-            elif med["id"] in v["medical_history"]:
-                del v["medical_history"][med["id"]]
+                v["medical_history"][str(med["id"])] = note
+            elif str(med["id"]) in v["medical_history"]:
+                del v["medical_history"][str(med["id"])]
 
+        # Save updated data
         save_data_encrypted(shots, medical_history, volunteers, settings)
+        
+        # Redirect to the dashboard
         return redirect(url_for("dashboard"))
 
-    return render_template("reminder_form.html", volunteer=v, shots=shots,
-                           medical_history=medical_history, edit_mode=True)
+    # Render the edit form, passing volunteer data and the shots & medical history
+    return render_template(
+        "reminder_form.html", volunteer=v, shots=shots, medical_history=medical_history, edit_mode=True
+    )
 
 # -----------------------------
 # REMOVE VOLUNTEER
@@ -220,3 +227,4 @@ threading.Thread(target=automatic_scheduler, daemon=True).start()
 
 if __name__ == "__main__":
     app.run(debug=True)
+
