@@ -72,16 +72,19 @@ def dashboard():
     today = datetime.date.today()
     for v in volunteers:
         v['next_due'] = {}
+        v['overdue'] = {}
         for shot in shots:
-            # Use string keys to match JSON keys
             last_date_str = v["shots"].get(str(shot["id"]))
             if last_date_str:
                 last_date = datetime.datetime.strptime(last_date_str, "%Y-%m-%d").date()
                 next_due = last_date + datetime.timedelta(days=shot["frequency"])
                 v['next_due'][str(shot["id"])] = next_due.strftime("%Y-%m-%d")
+                v['overdue'][str(shot["id"])] = (next_due < today)
             else:
                 v['next_due'][str(shot["id"])] = "No record"
+                v['overdue'][str(shot["id"])] = False
     return render_template('dashboard.html', volunteers=volunteers, shots=shots, medical_history=medical_history)
+
 
 # -----------------------------
 # SETTINGS PAGE
@@ -189,7 +192,8 @@ def edit_volunteer(volunteer_name):
             if last_date:
                 v["shots"][str(shot["id"])] = last_date
             elif str(shot["id"]) in v["shots"]:
-                del v["shots"][str(shot["id"])]
+                pass
+                # del v["shots"][str(shot["id"])]
 
         # Update medical history notes
         for med in medical_history:
@@ -197,7 +201,8 @@ def edit_volunteer(volunteer_name):
             if note:
                 v["medical_history"][str(med["id"])] = note
             elif str(med["id"]) in v["medical_history"]:
-                del v["medical_history"][str(med["id"])]
+                pass
+                # del v["medical_history"][str(med["id"])]
 
         # Save updated data
         save_data_encrypted(shots, medical_history, volunteers, settings)
@@ -226,5 +231,5 @@ def remove_volunteer(volunteer_name):
 threading.Thread(target=automatic_scheduler, daemon=True).start()
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=5002)
 
