@@ -1,57 +1,103 @@
 {% extends "base.html" %}
 {% block title %}Dashboard{% endblock %}
 {% block content %}
-<h1>Reminders Dashboard</h1>
-<table>
-    <tr>
-        <th>Volunteer</th>
-        <th>Shots & Next Due</th>
-        <th>Medical History</th>
-        <th>Actions</th>
-    </tr>
-    {% for v in volunteers %}
-    <tr>
-        <td>{{ v.name }}</td>
-        <td>
-            <ul>
-            {% for shot in shots %}
-                <li>
-                    <strong>{{ shot.name }}:</strong>
+<h1 class="page-title">Reminders Dashboard</h1>
 
-                    {% set key = shot.id|string %}
-                    {% if key in v.shots %}
-                        Last Given: {{ v.shots[key] }},
-                        Next Due: {{ v.next_due[key] }}
-                    {% else %}
-                        No record
-                    {% endif %}
-                </li>
+<div class="table-wrapper">
+    <table>
+        <thead>
+            <tr>
+                <th>Volunteer</th>
+                <th>Shots & Next Due</th>
+                <th>Medical History</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for v in volunteers | sort(attribute='name') %}
+            <tr>
+                <td>{{ v.name }}</td>
+                <td>
+                    <ul>
+                    {% for shot in shots | sort(attribute='name') %}
+                        <li>
+                            <strong>{{ shot.name }}:</strong>
+                            {% set key = shot.id|string %}
+                            {% if key in v.shots %}
+                                Last Given: {{ v.shots[key] }},
+                                Next Due:
+                                {% if v.overdue[key] %}
+                                    <span style="color: red; font-weight: bold;">
+                                    <!-- <span> -->
+                                        {{ v.next_due[key] }}
+                                    </span>
+                                {% else %}
+                                    {{ v.next_due[key] }}
+                                {% endif %}
+                            {% else %}
+                                No record
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                    </ul>
+                </td>
+                <td data-label="Medical History" class="medical-cell">
+
+                    <button class="toggle-med-btn" onclick="toggleMedical('{{ loop.index0 }}')">
+                        <i id="eye-icon-{{ loop.index0 }}" class="fas fa-eye-slash"></i>
+                    </button>
+
+                    <div id="medical-{{ loop.index0 }}" class="medical-content hidden">
+                        <ul>
+                            {% for med in medical_history | sort(attribute='name') %}
+                                {% set key = med.id|string %}
+                                <li>
+                                    <strong>{{ med.name }}:</strong>
+                                    {% if key in v.medical_history %}
+                                        {{ v.medical_history[key] }}
+                                    {% else %}
+                                        No record
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                </td>
+                <td class="actions">
+                    <a href="{{ url_for('edit_volunteer', volunteer_name=v.name) }}" class="action-btn edit-btn">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                    <a href="{{ url_for('remove_volunteer', volunteer_name=v.name) }}" class="action-btn remove-btn" onclick="return confirm('Are you sure?');">
+                        <i class="fas fa-trash-alt"></i> Remove
+                    </a>
+                </td>
+            </tr>
             {% endfor %}
-            </ul>
-        </td>
-        <td>
-            <ul>
-                {% for med in medical_history %}
-                    <li>
-                        <strong>{{ med.name }}:</strong>
-                        {% set key = med.id|string %}
-                        {% if key in v.medical_history %}
-                            {{ v.medical_history[key] }}
-                        {% else %}
-                            No record
-                        {% endif %}
-                    </li>
-                {% endfor %}
-            </ul>
-        </td>
-        <td>
-            <a href="{{ url_for('edit_volunteer', volunteer_name=v.name) }}">Edit</a> |
-            <a href="{{ url_for('remove_volunteer', volunteer_name=v.name) }}" onclick="return confirm('Are you sure?');">Remove</a>
-        </td>
-    </tr>
-    {% endfor %}
-</table>
+        </tbody>
+    </table>
+</div>
+
 {% if volunteers|length == 0 %}
-    <p>No volunteers yet! <a href="{{ url_for('add_reminder') }}">Add one?</a></p>
+    <p class="no-volunteers">No volunteers yet! <a href="{{ url_for('add_reminder') }}">Add one?</a></p>
 {% endif %}
+
+
+<script>
+function toggleMedical(id) {
+    const content = document.getElementById("medical-" + id);
+    const icon = document.getElementById("eye-icon-" + id);
+
+    content.classList.toggle("hidden");
+
+    if (content.classList.contains("hidden")) {
+        icon.classList.remove("fa-eye");
+        icon.classList.add("fa-eye-slash");
+    } else {
+        icon.classList.remove("fa-eye-slash");
+        icon.classList.add("fa-eye");
+    }
+}
+</script>
+
 {% endblock %}
