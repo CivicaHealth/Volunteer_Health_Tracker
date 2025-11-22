@@ -1,57 +1,98 @@
 {% extends "base.html" %}
-{% block title %}Manage Shot Types{% endblock %}
+{% block title %}Settings{% endblock %}
+
 {% block content %}
-<h1>Manage Shot Types</h1>
-<form method="POST" style="background: #fff; padding: 2em; border-radius: 6px; box-shadow: 0 1px 5px #bbb;">
-    <label for="admin_email" style="font-weight:bold;">Admin Notification Email:</label>
-    <input type="email" id="admin_email" name="admin_email" value="{{ settings.admin_email or '' }}" style="width:250px; margin-bottom: 1em;">
 
-    <!-- Shots Section -->
-    <table style="width:100%; margin-bottom:1em;">
-        <tr>
-            <th>Name</th>
-            <th>Frequency (days)</th>
-            <th>Action</th>
-        </tr>
-        {% for shot in shots %}
-        <tr>
-            <td><input type="text" name="shot_name_{{ shot.id }}" value="{{ shot.name }}" style="width:95%;"></td>
-            <td><input type="number" name="shot_frequency_{{ shot.id }}" value="{{ shot.frequency }}" style="width:80px;"></td>
-            <td><button name="remove_shot" value="{{ shot.id }}" style="background: #e53e3e; color:#fff; border-radius: 4px;">Remove</button></td>
-        </tr>
-        {% endfor %}
-        <tr>
-            <td><input type="text" name="new_shot_name" placeholder="New shot name" style="width:95%;"></td>
-            <td><input type="number" name="new_shot_frequency" placeholder="Days" style="width:80px;"></td>
-            <td><button type="submit" name="add_shot" style="background: #315fb2; color: #fff; border-radius: 4px;">Add Shot</button></td>
-        </tr>
-    </table>
+<h1 class="page-title"><i class="fas fa-cog"></i> Settings</h1>
 
-    <!-- Medical History Section -->
-    <h2>Medical History</h2>
-    <table style="width:100%; margin-bottom:1em;">
-        <tr>
-            <th>Condition/Procedure Name</th>
-            <!-- <th>Notes</th> -->
-            <th>Action</th>
-        </tr>
-        {% for medical in medical_history %}
-        <tr>
-            <td><input type="text" name="medical_name_{{ medical.id }}" value="{{ medical.name }}" style="width:95%;"></td>
-            <!-- <td>
-                <input type="text" name="medical_note_{{ medical.id }}"
-                       value="">
-            </td> -->
-            <td><button name="remove_medical" value="{{ medical.id }}" style="background: #e53e3e; color:#fff; border-radius: 4px;">Remove</button></td>
-        </tr>
-        {% endfor %}
-        <tr>
-            <td><input type="text" name="new_medical_name" placeholder="Condition/Procedure name" style="width:95%;"></td>
-            <!-- <td><input type="text" name="new_medical_note" placeholder="Notes" style="width:95%;"></td> -->
-            <td><button type="submit" name="add_medical" style="background: #315fb2; color: #fff; border-radius: 4px;">Add Medical History</button></td>
-        </tr>
-    </table>
+<div class="form-card">
+    <form method="POST" class="form">
 
-    <button type="submit" name="save_all" style="background: #315fb2; color: #fff; border-radius: 4px; float:right;">Save All</button>
-</form>
+        <!-- Admin Settings -->
+        <h2 class="form-section-title"><i class="fas fa-envelope"></i> Admin Email</h2>
+
+        <label for="admin_email">Admin Notification Email:</label>
+        <input type="email" id="admin_email" name="admin_email"
+               value="{{ settings.admin_email or '' }}">
+
+        <!-- Shots Section -->
+        <h2 class="form-section-title"><i class="fas fa-syringe"></i> Shot Types</h2>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Frequency (days)</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for shot in shots | sort(attribute='name') %}
+                    <tr>
+                        <td><input type="text" name="shot_name_{{ shot.id }}" value="{{ shot.name }}"></td>
+                        <td><input type="number" name="shot_frequency_{{ shot.id }}" value="{{ shot.frequency }}"></td>
+                        <td>
+                            <button name="remove_shot" value="{{ shot.id }}" class="danger-btn">
+                                <i class="fas fa-trash-alt"></i> Remove
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+                    <tr>
+                        <td><input type="text" name="new_shot_name" placeholder="New shot name"></td>
+                        <td><input type="number" name="new_shot_frequency" placeholder="Days"></td>
+                        <td>
+                            <button type="submit" name="add_shot" class="primary-btn small-btn">
+                                <i class="fas fa-plus"></i> Add Shot
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Medical History Section -->
+        <h2 class="form-section-title"><i class="fas fa-notes-medical"></i> Medical History Types</h2>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Condition/Procedure</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for medical in medical_history | sort(attribute='name') %}
+                    <tr>
+                        <td>
+                            <input type="text" name="medical_name_{{ medical.id }}" value="{{ medical.name }}">
+                        </td>
+                        <td>
+                            <button name="remove_medical" value="{{ medical.id }}" class="danger-btn">
+                                <i class="fas fa-trash-alt"></i> Remove
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+                    <tr>
+                        <td><input type="text" name="new_medical_name" placeholder="Condition/Procedure name"></td>
+                        <td>
+                            <button type="submit" name="add_medical" class="primary-btn small-btn">
+                                <i class="fas fa-plus"></i> Add Medical
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <button type="submit" name="save_all" class="primary-btn right-btn">
+            <i class="fas fa-save"></i> Save All
+        </button>
+
+    </form>
+</div>
+
 {% endblock %}
