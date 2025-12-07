@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}{% if edit_mode %}Edit Volunteer Shots{% else %}Add Volunteer Shots{% endif %}{% endblock %}
+{% block content %}
+<h1>{% if edit_mode %}Edit Volunteer Shots{% else %}Add Volunteer Shots{% endif %}</h1>
+<form method="POST">
+    <label for="volunteer">Volunteer Name:</label>
+    <input type="text" id="volunteer" name="volunteer" value="{% if edit_mode %}{{ volunteer.name }}{% endif %}" {% if edit_mode %}readonly{% endif %}><br><br>
+
+    <label for="email">Volunteer Email:</label>
+    <input type="email" id="email" name="email" value="{% if edit_mode %}{{ volunteer.email }}{% endif %}"><br><br>
+
+    <!-- Shots Section -->
+    {% for shot in shots %}
+        <div>
+            <label>{{ shot.name }} (every {{ shot.frequency }} days):</label>
+            <input type="date" name="last_date_{{ shot.id }}" value="{% if edit_mode and shot.id in volunteer.shots %}{{ volunteer.shots[shot.id] }}{% endif %}">
+        </div>
+    {% endfor %}
+
+    <!-- Medical History Section -->
+    <h2>Medical History Notes</h2>
+    {% for med in medical_history %}
+        <div>
+            <label>{{ med.name }}:</label>
+            <input type="text" name="medical_note_{{ med.id }}"
+                   value="{% if edit_mode and med.id in volunteer.medical_history %}{{ volunteer.medical_history[med.id] }}{% endif %}">
+        </div>
+    {% endfor %}
+
+    <button type="submit">{% if edit_mode %}Save Changes{% else %}Save Volunteer Records{% endif %}</button>
+</form>
+{% endblock %}

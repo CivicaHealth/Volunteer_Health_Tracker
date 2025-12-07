@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1>Reminders Dashboard</h1>
+<table>
+    <tr>
+        <th>Volunteer</th>
+        <th>Shots & Next Due</th>
+        <th>Medical History</th>
+        <th>Actions</th>
+    </tr>
+    {% for v in volunteers %}
+    <tr>
+        <td>{{ v.name }}</td>
+        <td>
+            <ul>
+            {% for shot in shots %}
+                <li>
+                    <strong>{{ shot.name }}:</strong>
+
+                    {% set key = shot.id|string %}
+                    {% if key in v.shots %}
+                        Last Given: {{ v.shots[key] }},
+                        Next Due: {{ v.next_due[key] }}
+                    {% else %}
+                        No record
+                    {% endif %}
+                </li>
+            {% endfor %}
+            </ul>
+        </td>
+        <td>
+            <ul>
+                {% for med in medical_history %}
+                    <li>
+                        <strong>{{ med.name }}:</strong>
+                        {% set key = med.id|string %}
+                        {% if key in v.medical_history %}
+                            {{ v.medical_history[key] }}
+                        {% else %}
+                            No record
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        </td>
+        <td>
+            <a href="{{ url_for('edit_volunteer', volunteer_name=v.name) }}">Edit</a> |
+            <a href="{{ url_for('remove_volunteer', volunteer_name=v.name) }}" onclick="return confirm('Are you sure?');">Remove</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% if volunteers|length == 0 %}
+    <p>No volunteers yet! <a href="{{ url_for('add_reminder') }}">Add one?</a></p>
+{% endif %}
+{% endblock %}

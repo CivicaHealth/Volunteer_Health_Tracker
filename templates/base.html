@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Dashboard{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav>
+        <a href="{{ url_for('dashboard') }}">Dashboard</a> |
+        <a href="{{ url_for('add_reminder') }}">Add Reminder</a> |
+        <a href="{{ url_for('settings_page') }}">Settings</a>
+    </nav>
+    <hr>
+    {% block content %}{% endblock %}
+</body>
+</html>
