@@ -230,6 +230,6 @@ threading.Thread(target=automatic_scheduler, daemon=True).start()
 
 if __name__ == "__main__":
     # Use Render's PORT or default to 5000 for local dev
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.get("PORT", 5001))
     app.run(host="0.0.0.0", port=port)
 
